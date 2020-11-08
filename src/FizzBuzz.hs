@@ -5,12 +5,9 @@ module FizzBuzz (
     , Result
     , correctAnswer
     , result
-) where
+    ) where
 
-import Control.Monad   (join)
-import Data.Profunctor (lmap)
-import Numeric.Natural
-import Text.Read       (readMaybe)
+import Numeric.Natural (Natural)
 
 data Answer = Number Natural
             | Words Words

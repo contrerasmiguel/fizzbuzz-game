@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 03e8c6d5d5ca38d4bbe3bf1581c25063c62ff7284e0d7c470cf8ec1505ab3e98
+-- hash: 8d88e6e2be17e94d7f4bf3810a40e424a61c354f6b585af85c56dbdb144f6543
 
 name:           fizzbuzz
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
   build-depends:
       base >=4.7 && <5
     , profunctors ==5.5.2
+    , random ==1.1
     , text ==1.2.4.0
   default-language: Haskell2010
 
@@ -50,6 +51,7 @@ executable fizzbuzz-exe
       base >=4.7 && <5
     , fizzbuzz
     , profunctors ==5.5.2
+    , random ==1.1
     , text ==1.2.4.0
   default-language: Haskell2010
 
@@ -65,5 +67,6 @@ test-suite fizzbuzz-test
       base >=4.7 && <5
     , fizzbuzz
     , profunctors ==5.5.2
+    , random ==1.1
     , text ==1.2.4.0
   default-language: Haskell2010
