@@ -2,6 +2,9 @@ module Player (
       PlayerPoolSize (poolSize)
     , Player (Player)
     , PlayerName
+    , Uncertainty (Uncertainty)
+    , UncertaintyFactor (UncertaintyFactor)
+    , RandomFactor (RandomFactor)
     , answer
     , availablePlayers
     , intToPlayerPoolSize
@@ -38,8 +41,7 @@ randomWords (Uncertainty maxUncertainty) (RandomFactor rFactor) =
             -> Fizz
         x | x >= (maxUncertainty / 3) && x <= (2 * maxUncertainty / 3 - 1)
             -> Buzz
-        x | x >= (2 * maxUncertainty / 3) && x <= maxUncertainty
-            -> FizzBuzz
+        _   -> FizzBuzz
 
 randomAnswer :: Uncertainty
              -> RandomFactor
@@ -53,15 +55,14 @@ randomAnswer maxU@(Uncertainty maxUncertainty)
         else Number (round rFactor)
 
 answer :: Uncertainty
-         -> UncertaintyFactor
-         -> RandomFactor
-         -> Question
-         -> Answer
+       -> UncertaintyFactor
+       -> RandomFactor
+       -> Question
+       -> Answer
 answer maxUncertain@(Uncertainty max)
-         (UncertaintyFactor uFactor)
-         rFact@(RandomFactor rFactor)
-         question =
-    let max = 999 in
+       (UncertaintyFactor uFactor)
+       rFact@(RandomFactor rFactor)
+       question =
     if rFactor * uFactor < max
         then correctAnswer question
         else randomAnswer maxUncertain rFact question

@@ -2,9 +2,11 @@ module FizzBuzz (
       Answer (Number, Words)
     , Words (Fizz, Buzz, FizzBuzz)
     , Question
-    , Result
+    , Result (Correct, Incorrect)
     , correctAnswer
+    , questions
     , result
+    , takeQuestion
     ) where
 
 import Numeric.Natural (Natural)
@@ -32,6 +34,12 @@ type Question = Natural
 
 data Result = Incorrect | Correct deriving Show
 
+questions :: [Question]
+questions = [1..]
+
+takeQuestion :: [Question] -> (Question, [Question])
+takeQuestion questions = (head questions, tail questions)
+
 correctAnswer :: Question -> Answer
 correctAnswer n =
     if n `mod` 3 == 0
@@ -47,28 +55,3 @@ result answer question =
     if answer == (correctAnswer question)
         then Correct
         else Incorrect
-
--- answerForNumberIs :: Answer -> Question -> String
--- answerForNumberIs answer question =
---     "The answer for " ++ show question ++ " is " ++ show answer
-
--- How does it work?
--- answerForNumberIs is of type: Answer -> Question -> String
--- lmap plugs correctAnswer (Question -> Answer) to the "answer" parameter,
--- resulting in Question -> Question -> String. This is, in fact, a monad of
--- type ((->) Question Question), which can be reduced by applying the join
--- function. For this particular monad instance, join results in a function that
--- receives just one question, but uses it twice internally
-
--- correctAnswerForNumberIs :: Question -> String
--- correctAnswerForNumberIs = join $ lmap correctAnswer answerForNumberIs
-
--- someFunc :: IO ()
--- someFunc = do
---     putStr "Please, enter a number: "
---     inputText <- getLine
---     let maybeNumber = readMaybe inputText :: Maybe Natural
---     maybe
---         (return ())
---         (putStrLn . correctAnswerForNumberIs)
---         maybeNumber
