@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-
 module Output (
       PlayInfo (PlayInfo)
     , showPlay
