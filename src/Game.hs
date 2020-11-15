@@ -10,20 +10,20 @@ module Game (
     , NextPlayer        (NextPlayer)
     , Player            (Player)
     , PlayerName
-    , PlayerPoolSize    (poolSize)
     , Uncertainty       (Uncertainty)
     , UncertaintyFactor (UncertaintyFactor)
     , RandomFactor      (RandomFactor)
     , answer
     , availablePlayers
     , initialState
-    , intToPlayerPoolSize
     , maxPlayers
+    , maxUncertainty
     , nextPlayer
     , noLosers
     ) where
 
 import Control.Monad.Reader (MonadReader (ask))
+import Control.Monad.State (MonadState, gets)
 
 import FizzBuzz (
       Answer (Words, Number)
@@ -31,15 +31,13 @@ import FizzBuzz (
     , Result (Incorrect)
     , Words (Fizz, Buzz, FizzBuzz)
     , correctAnswer
-    , questions
     )
 
 type PlayerName = String
 
-newtype NextPlayer =     NextPlayer Player
-newtype PlayerPoolSize = PlayerPoolSize { poolSize :: Int }
-newtype Uncertainty =    Uncertainty Float
-newtype RandomFactor =   RandomFactor Float
+newtype NextPlayer   = NextPlayer Player
+newtype Uncertainty  = Uncertainty Float
+newtype RandomFactor = RandomFactor Float
 
 newtype UncertaintyFactor = UncertaintyFactor Float
     deriving Eq
@@ -85,10 +83,6 @@ noLosers _ _ = id
 availablePlayers :: [Player]
 availablePlayers = playerFromName <$> playerNames
 
-intToPlayerPoolSize :: Int -> Maybe PlayerPoolSize
-intToPlayerPoolSize size | size < 2 || size > length playerNames = Nothing
-intToPlayerPoolSize size = Just $ PlayerPoolSize size
-
 maxPlayers :: Int
 maxPlayers = length playerNames
 
@@ -108,18 +102,22 @@ randomAnswer rFact@(RandomFactor rFactor) = do
         then Words $ randomWords maxUncertainty rFact
         else Number $ round rFactor
 
-answer :: MonadReader Uncertainty m =>
-          UncertaintyFactor
-       -> RandomFactor
-       -> Question
+answer :: (MonadState GameState m, MonadReader Uncertainty m) =>
+          RandomFactor
        -> m Answer
-answer (UncertaintyFactor uFactor)
-       rFact@(RandomFactor rFactor)
-       question = do
+answer rFact@(RandomFactor rFactor) = do
     Uncertainty max <- ask
+    (UncertaintyFactor uFactor) <- gets uncertaintyFactor
+    question <- gets $ head . remainingQuestions
     if rFactor * uFactor < max
         then pure $ correctAnswer question
         else randomAnswer rFact
 
 initialState :: [Player] -> GameState
 initialState players = GameState players (UncertaintyFactor 1) questions
+
+maxUncertainty :: Uncertainty
+maxUncertainty = Uncertainty 999
+
+questions :: [Question]
+questions = [1..]

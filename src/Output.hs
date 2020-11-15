@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Output (
       PlayInfo (PlayInfo)
     , showPlay
@@ -5,8 +7,9 @@ module Output (
     ) where
 
 import Control.Arrow ((>>>))
-import FizzBuzz      (Result, Question, Answer)
-import Game          (PlayerName)
+import FizzBuzz (Result, Question, Answer)
+
+import Game (PlayerName)
 
 data PlayInfo = PlayInfo {
       question   :: Question

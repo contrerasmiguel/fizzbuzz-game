@@ -4,9 +4,7 @@ module FizzBuzz (
     , Question
     , Result (Correct, Incorrect)
     , correctAnswer
-    , questions
     , result
-    , takeQuestion
     ) where
 
 import Numeric.Natural (Natural)
@@ -34,24 +32,17 @@ type Question = Natural
 
 data Result = Incorrect | Correct deriving Show
 
-questions :: [Question]
-questions = [1..]
-
-takeQuestion :: [Question] -> (Question, [Question])
-takeQuestion questions = (head questions, tail questions)
-
 correctAnswer :: Question -> Answer
-correctAnswer n =
-    if n `mod` 3 == 0
-        then if n `mod` 5 == 0
+correctAnswer n
+    | n `mod` 3 == 0 =
+        if n `mod` 5 == 0
             then Words FizzBuzz
             else Words Fizz
-        else if n `mod` 5 == 0
-            then Words Buzz
-            else Number n
+    | n `mod` 5 == 0 = Words Buzz
+    | otherwise = Number n
 
 result :: Answer -> Question -> Result
 result answer question =
-    if answer == (correctAnswer question)
+    if answer == correctAnswer question
         then Correct
         else Incorrect
