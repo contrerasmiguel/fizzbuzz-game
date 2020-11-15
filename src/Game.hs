@@ -12,8 +12,6 @@ module Game (
     , maxPlayers
     , nextPlayer
     , noLosers
-    , playInfo
-    , victoryMessage
     ) where
 
 import FizzBuzz (
@@ -103,9 +101,3 @@ answer maxUncertainty@(Uncertainty max)
     if rFactor * uFactor < max
         then correctAnswer question
         else randomAnswer maxUncertainty rFact
-
-victoryMessage :: PlayerName -> String
-victoryMessage = flip (++) " won!"
-
-playInfo :: (Show a, Show b, Show c) => a -> String -> b -> c -> String
-playInfo question playerName playerAnswer playResult = "[" ++ show question ++ "]\t" ++ playerName ++ ": " ++ show playerAnswer ++ " (" ++ show playResult ++ ")"
