@@ -29,6 +29,6 @@ showResult playInfo = " (" ++ show (result playInfo) ++ ")"
 
 showPlay :: PlayInfo -> String
 showPlay = pure >>> (<*>) [ showQuestion
-                              , showPlayer
-                              , show . answer
-                              , showResult ] >>> concat
+                          , showPlayer
+                          , show . answer
+                          , showResult ] >>> concat

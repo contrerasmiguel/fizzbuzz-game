@@ -2,25 +2,30 @@
 
 module Main where
 
-import Control.Monad.Reader   (MonadReader (ask), runReaderT)
 import Control.Monad.IO.Class (MonadIO (liftIO))
+import Control.Monad.Reader   (MonadReader (ask), runReaderT)
+import Control.Monad.State    (MonadState (put), gets, evalStateT)
 
 import FizzBuzz (
-      Question
-    , questions
-    , result
+      result
     , takeQuestion
     )
 
 import Game (
-      Player            (Player)
+      GameState (
+          GameState
+        , remainingPlayers
+        , uncertaintyFactor
+        , remainingQuestions
+        )
+    , Player            (Player)
     , Uncertainty       (Uncertainty)
     , UncertaintyFactor (UncertaintyFactor)
     , RandomFactor      (RandomFactor)
     , availablePlayers
     , answer
+    , initialState
     , maxPlayers
-    , nextPlayer
     , noLosers
     )
 
@@ -39,39 +44,29 @@ shuffle xs = reorderBy xs <$> asManyAs xs (randomRIO (1 :: Int, 100000))
 shuffledPlayerPool :: IO [Player]
 shuffledPlayerPool = take maxPlayers <$> shuffle availablePlayers
 
-gameLoop :: (MonadReader Uncertainty m, MonadIO m) =>
-             Player
-          -> [Player]
-          -> UncertaintyFactor
-          -> [Question]
-          -> m ()
-gameLoop
-    currentPlayer@(Player _ pName)
-    players
-    uncertaintyFactor@(UncertaintyFactor uFactor)
-    questions = do
-    maxUncertainty@(Uncertainty maxU) <- ask
+gameLoop :: (MonadState GameState m, MonadReader Uncertainty m, MonadIO m) => m ()
+gameLoop = do
+    Uncertainty maxU <- ask
+    uncertaintyFactor@(UncertaintyFactor uFactor) <- gets uncertaintyFactor
+    players <- gets remainingPlayers
+    questions <- gets remainingQuestions
+    let currentPlayer@(Player _ pName) = head players
     if length players == 1
         then liftIO $ putStrLn $ victoryMessage pName
         else do
             randomF <- liftIO $ randomRIO (1 :: Float, maxU / 100)
             let (question, otherQuestions) = takeQuestion questions
-            let playerAnswer = answer maxUncertainty uncertaintyFactor (RandomFactor randomF) question
+            playerAnswer <- answer uncertaintyFactor (RandomFactor randomF) question
             let pResult = result playerAnswer question
             let playInfo = PlayInfo question pName playerAnswer pResult
-            let remainingPlayers = noLosers currentPlayer pResult players
             liftIO $ putStrLn $ showPlay playInfo
+            put GameState {
+                  remainingPlayers = noLosers currentPlayer pResult players
+                , uncertaintyFactor = UncertaintyFactor $ uFactor + 1
+                , remainingQuestions = otherQuestions
+            }
             gameLoop
-                (nextPlayer currentPlayer players)
-                remainingPlayers
-                (UncertaintyFactor $ uFactor + 1)
-                otherQuestions
 
 main :: IO ()
-main = do
-    players <- shuffledPlayerPool
-    runReaderT (gameLoop
-        (head players)
-        players
-        (UncertaintyFactor 1)
-        questions) (Uncertainty 999)
+main = shuffledPlayerPool
+    >>= (evalStateT (runReaderT gameLoop $ Uncertainty 999) . initialState)

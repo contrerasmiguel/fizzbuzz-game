@@ -1,7 +1,4 @@
-module Util (
-      asManyAs
-    , reorderBy
-    ) where
+module Util (asManyAs, reorderBy) where
 
 import Control.Monad (replicateM)
 import Data.Function (on)

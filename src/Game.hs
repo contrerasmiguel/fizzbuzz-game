@@ -1,7 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Game (
-      NextPlayer        (NextPlayer)
+      GameState (
+          GameState
+        , remainingPlayers
+        , uncertaintyFactor
+        , remainingQuestions
+        )
+    , NextPlayer        (NextPlayer)
     , Player            (Player)
     , PlayerName
     , PlayerPoolSize    (poolSize)
@@ -10,6 +16,7 @@ module Game (
     , RandomFactor      (RandomFactor)
     , answer
     , availablePlayers
+    , initialState
     , intToPlayerPoolSize
     , maxPlayers
     , nextPlayer
@@ -24,14 +31,15 @@ import FizzBuzz (
     , Result (Incorrect)
     , Words (Fizz, Buzz, FizzBuzz)
     , correctAnswer
+    , questions
     )
 
 type PlayerName = String
 
-newtype NextPlayer = NextPlayer Player
+newtype NextPlayer =     NextPlayer Player
 newtype PlayerPoolSize = PlayerPoolSize { poolSize :: Int }
-newtype Uncertainty = Uncertainty Float
-newtype RandomFactor = RandomFactor Float
+newtype Uncertainty =    Uncertainty Float
+newtype RandomFactor =   RandomFactor Float
 
 newtype UncertaintyFactor = UncertaintyFactor Float
     deriving Eq
@@ -42,6 +50,12 @@ data Player = Player UncertaintyFactor PlayerName
 instance Show Player where
     show (Player (UncertaintyFactor uFactor) name) =
         "(" ++ name ++ ", " ++ show uFactor ++ ")"
+
+data GameState = GameState {
+      remainingPlayers   :: [Player]
+    , uncertaintyFactor  :: UncertaintyFactor
+    , remainingQuestions :: [Question]
+    }
 
 playerNames :: [PlayerName]
 playerNames = [
@@ -106,3 +120,6 @@ answer (UncertaintyFactor uFactor)
     if rFactor * uFactor < max
         then pure $ correctAnswer question
         else randomAnswer rFact
+
+initialState :: [Player] -> GameState
+initialState players = GameState players (UncertaintyFactor 1) questions
