@@ -8,33 +8,27 @@ import FizzBuzz (
     )
 
 import Game (
-      nextPlayer
-    , noLosers
-    )
-
-import Player (
       Player (Player)
-    , PlayerPoolSize (poolSize)
     , Uncertainty (Uncertainty)
     , UncertaintyFactor (UncertaintyFactor)
     , RandomFactor (RandomFactor)
     , availablePlayers
     , answer
     , maxPlayers
+    , nextPlayer
+    , noLosers
+    , playInfo
+    , victoryMessage
     )
 
-import Control.Monad (replicateM)
-import Data.Function (on)
-import Data.List (sortBy)
 import System.Random (randomRIO)
+import Util          (asManyAs, reorderBy)
 
 shuffle :: [a] -> IO [a]
-shuffle xs = do
-    ys <- replicateM (length xs) $ randomRIO (1 :: Int, 100000)
-    pure $ fst <$> sortBy (compare `on` snd) (zip xs ys)
+shuffle xs = reorderBy xs <$> asManyAs xs (randomRIO (1 :: Int, 100000))
 
 shuffledPlayerPool :: IO [Player]
-shuffledPlayerPool = take (poolSize maxPlayers) <$> shuffle availablePlayers
+shuffledPlayerPool = take maxPlayers <$> shuffle availablePlayers
 
 gameLoop :: Player
          -> [Player]
@@ -49,13 +43,13 @@ gameLoop
     uncertaintyFactor@(UncertaintyFactor uFactor)
     questions = do
     if length players == 1
-        then putStrLn $ pName ++ " won!"
+        then putStrLn $ victoryMessage pName
         else do
             let (question, otherQuestions) = takeQuestion questions
             randomF <- randomRIO (1 :: Float, maxUncertain / 100)
             let playerAnswer = answer maxUncertainty uncertaintyFactor (RandomFactor randomF) question
             let pResult = result playerAnswer question
-            putStrLn $ "[" ++ show question ++ "]\t" ++ pName ++ ": " ++ show playerAnswer ++ " (" ++ show pResult ++ ")"
+            putStrLn $ playInfo question pName playerAnswer pResult
             let remainingPlayers = noLosers currentPlayer pResult players
             gameLoop
                 (nextPlayer currentPlayer players)

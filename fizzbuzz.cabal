@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c0c5e98c83191944ac68c80025ea0a6ad2a8313d3d961980bc658f15c6ccd7f4
+-- hash: 29b46b00bac780862e2769acfc6583cd3d6306c3ba8ab416b0f7ef296ca2a6fa
 
 name:           fizzbuzz
 version:        0.1.0.0
@@ -29,7 +29,7 @@ library
   exposed-modules:
       FizzBuzz
       Game
-      Player
+      Util
   other-modules:
       Paths_fizzbuzz
   hs-source-dirs:
