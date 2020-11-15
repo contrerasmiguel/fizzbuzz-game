@@ -39,13 +39,13 @@ shuffle xs = reorderBy xs <$> asManyAs xs (randomRIO (1 :: Int, 100000))
 shuffledPlayerPool :: IO [Player]
 shuffledPlayerPool = take maxPlayers <$> shuffle availablePlayers
 
-gameLoop' :: (MonadReader Uncertainty m, MonadIO m) =>
+gameLoop :: (MonadReader Uncertainty m, MonadIO m) =>
              Player
           -> [Player]
           -> UncertaintyFactor
           -> [Question]
           -> m ()
-gameLoop'
+gameLoop
     currentPlayer@(Player _ pName)
     players
     uncertaintyFactor@(UncertaintyFactor uFactor)
@@ -61,7 +61,7 @@ gameLoop'
             let playInfo = PlayInfo question pName playerAnswer pResult
             let remainingPlayers = noLosers currentPlayer pResult players
             liftIO $ putStrLn $ showPlay playInfo
-            gameLoop'
+            gameLoop
                 (nextPlayer currentPlayer players)
                 remainingPlayers
                 (UncertaintyFactor $ uFactor + 1)
@@ -70,7 +70,7 @@ gameLoop'
 main :: IO ()
 main = do
     players <- shuffledPlayerPool
-    runReaderT (gameLoop'
+    runReaderT (gameLoop
         (head players)
         players
         (UncertaintyFactor 1)
