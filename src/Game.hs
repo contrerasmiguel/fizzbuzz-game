@@ -78,10 +78,9 @@ intToPlayerPoolSize size = Just $ PlayerPoolSize size
 maxPlayers :: Int
 maxPlayers = length playerNames
 
-randomWords :: MonadReader Uncertainty m => RandomFactor -> m Words
-randomWords (RandomFactor rFactor) = do
-    Uncertainty maxUncertainty <- ask
-    pure $ case rFactor of
+randomWords :: Uncertainty -> RandomFactor -> Words
+randomWords (Uncertainty maxUncertainty) (RandomFactor rFactor) =
+    case rFactor of
         x | x >= 0 && x <= (maxUncertainty / 3 - 1)
             -> Fizz
         x | x >= (maxUncertainty / 3) && x <= (2 * maxUncertainty / 3 - 1)
@@ -90,10 +89,10 @@ randomWords (RandomFactor rFactor) = do
 
 randomAnswer :: MonadReader Uncertainty m => RandomFactor -> m Answer
 randomAnswer rFact@(RandomFactor rFactor) = do
-    Uncertainty maxUncertainty <- ask
-    if rFactor > maxUncertainty / 2
-        then Words <$> randomWords rFact
-        else pure $ Number $ round rFactor
+    maxUncertainty@(Uncertainty maxU) <- ask
+    pure $ if rFactor > maxU / 2
+        then Words $ randomWords maxUncertainty rFact
+        else Number $ round rFactor
 
 answer :: MonadReader Uncertainty m =>
           UncertaintyFactor
