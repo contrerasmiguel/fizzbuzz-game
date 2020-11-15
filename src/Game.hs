@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Game (
       NextPlayer        (NextPlayer)
     , Player            (Player)
@@ -13,6 +15,8 @@ module Game (
     , nextPlayer
     , noLosers
     ) where
+
+import Control.Monad.Reader (MonadReader (ask))
 
 import FizzBuzz (
       Answer (Words, Number)
@@ -74,30 +78,32 @@ intToPlayerPoolSize size = Just $ PlayerPoolSize size
 maxPlayers :: Int
 maxPlayers = length playerNames
 
-randomWords :: Uncertainty -> RandomFactor -> Words
-randomWords (Uncertainty maxUncertainty) (RandomFactor rFactor) =
-    case rFactor of
+randomWords :: MonadReader Uncertainty m => RandomFactor -> m Words
+randomWords (RandomFactor rFactor) = do
+    Uncertainty maxUncertainty <- ask
+    pure $ case rFactor of
         x | x >= 0 && x <= (maxUncertainty / 3 - 1)
             -> Fizz
         x | x >= (maxUncertainty / 3) && x <= (2 * maxUncertainty / 3 - 1)
             -> Buzz
         _   -> FizzBuzz
 
-randomAnswer :: Uncertainty -> RandomFactor -> Answer
-randomAnswer maxU@(Uncertainty maxUncertainty) rFact@(RandomFactor rFactor) =
+randomAnswer :: MonadReader Uncertainty m => RandomFactor -> m Answer
+randomAnswer rFact@(RandomFactor rFactor) = do
+    Uncertainty maxUncertainty <- ask
     if rFactor > maxUncertainty / 2
-        then Words $ randomWords maxU rFact
-        else Number $ round rFactor
+        then Words <$> randomWords rFact
+        else pure $ Number $ round rFactor
 
-answer :: Uncertainty
-       -> UncertaintyFactor
+answer :: MonadReader Uncertainty m =>
+          UncertaintyFactor
        -> RandomFactor
        -> Question
-       -> Answer
-answer maxUncertainty@(Uncertainty max)
-       (UncertaintyFactor uFactor)
+       -> m Answer
+answer (UncertaintyFactor uFactor)
        rFact@(RandomFactor rFactor)
-       question =
+       question = do
+    Uncertainty max <- ask
     if rFactor * uFactor < max
-        then correctAnswer question
-        else randomAnswer maxUncertainty rFact
+        then pure $ correctAnswer question
+        else randomAnswer rFact
