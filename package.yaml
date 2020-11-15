@@ -24,6 +24,7 @@ dependencies:
 - profunctors == 5.5.2
 - text == 1.2.4.0
 - random == 1.1
+- mtl == 2.2.2
 
 library:
   source-dirs: src

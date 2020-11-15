@@ -1,11 +1,11 @@
 module Game (
-      NextPlayer (NextPlayer)
-    , Player (Player)
+      NextPlayer        (NextPlayer)
+    , Player            (Player)
     , PlayerName
-    , PlayerPoolSize (poolSize)
-    , Uncertainty (Uncertainty)
+    , PlayerPoolSize    (poolSize)
+    , Uncertainty       (Uncertainty)
     , UncertaintyFactor (UncertaintyFactor)
-    , RandomFactor (RandomFactor)
+    , RandomFactor      (RandomFactor)
     , answer
     , availablePlayers
     , intToPlayerPoolSize

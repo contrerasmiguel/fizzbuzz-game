@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b78eccc9936401d271c636ff50719faf6ae6f23111e421c6950f9975d76ab279
+-- hash: ca5f089a30732db76c6ece577085e20251e147ce4b819eaee7875328146064a5
 
 name:           fizzbuzz
 version:        0.1.0.0
@@ -37,6 +37,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , mtl ==2.2.2
     , profunctors ==5.5.2
     , random ==1.1
     , text ==1.2.4.0
@@ -52,6 +53,7 @@ executable fizzbuzz-exe
   build-depends:
       base >=4.7 && <5
     , fizzbuzz
+    , mtl ==2.2.2
     , profunctors ==5.5.2
     , random ==1.1
     , text ==1.2.4.0
@@ -68,6 +70,7 @@ test-suite fizzbuzz-test
   build-depends:
       base >=4.7 && <5
     , fizzbuzz
+    , mtl ==2.2.2
     , profunctors ==5.5.2
     , random ==1.1
     , text ==1.2.4.0
