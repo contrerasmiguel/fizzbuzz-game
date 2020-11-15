@@ -1,11 +1,15 @@
-module Main where                                                                                                                                                      
+module Main where
 
 import FizzBuzz (
-          Question
-        , Result (Correct, Incorrect)
-        , questions
-        , result
-        , takeQuestion
+      Question
+    , questions
+    , result
+    , takeQuestion
+    )
+
+import Game (
+      nextPlayer
+    , noLosers
     )
 
 import Player (
@@ -16,17 +20,13 @@ import Player (
     , RandomFactor (RandomFactor)
     , availablePlayers
     , answer
-    , intToPlayerPoolSize
     , maxPlayers
     )
 
-import Control.Monad (join, replicateM)
+import Control.Monad (replicateM)
 import Data.Function (on)
 import Data.List (sortBy)
-import Data.Profunctor (lmap)
 import System.Random (randomRIO)
-
-newtype NextPlayer = NextPlayer Player
 
 shuffle :: [a] -> IO [a]
 shuffle xs = do
@@ -34,15 +34,7 @@ shuffle xs = do
     pure $ fst <$> sortBy (compare `on` snd) (zip xs ys)
 
 shuffledPlayerPool :: IO [Player]
-shuffledPlayerPool = (take $ poolSize maxPlayers) <$> shuffle availablePlayers
-
-nextPlayer :: Player -> [Player] -> Player
-nextPlayer currentPlayer players =
-    head $ tail $ dropWhile ((/=) currentPlayer) $ cycle players
-
-noLosers :: Player -> Result -> [Player] -> [Player]
-noLosers currentPlayer Incorrect = filter $ (/=) currentPlayer
-noLosers _ _ = id
+shuffledPlayerPool = take (poolSize maxPlayers) <$> shuffle availablePlayers
 
 gameLoop :: Player
          -> [Player]
