@@ -34,12 +34,12 @@ data Result = Incorrect | Correct deriving Show
 
 correctAnswer :: Question -> Answer
 correctAnswer n
-    | n `mod` 3 == 0 =
-        if n `mod` 5 == 0
-            then Words FizzBuzz
-            else Words Fizz
-    | n `mod` 5 == 0 = Words Buzz
+    | nMultipleOf 15 = Words FizzBuzz
+    | nMultipleOf 5 = Words Buzz
+    | nMultipleOf 3 = Words Fizz
     | otherwise = Number n
+    where
+        nMultipleOf m = n `mod` m == 0
 
 result :: Answer -> Question -> Result
 result answer question =

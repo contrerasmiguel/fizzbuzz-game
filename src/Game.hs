@@ -1,20 +1,9 @@
 {-# LANGUAGE FlexibleContexts #-}
 
 module Game (
-      GameState (
-          GameState
-        , remainingPlayers
-        , uncertaintyFactor
-        , remainingQuestions
-        )
-    , NextPlayer        (NextPlayer)
-    , Play              (LastPlay, RegularPlay)
-    , Player            (Player)
-    , PlayerName
-    , Uncertainty       (Uncertainty)
-    , UncertaintyFactor (UncertaintyFactor)
-    , RandomFactor      (RandomFactor)
-    , answer
+      GameState
+    , Player
+    , Uncertainty (Uncertainty)
     , availablePlayers
     , gameFinished
     , initialState
@@ -22,8 +11,6 @@ module Game (
     , maxUncertainty
     , nextGameState
     , nextPlay
-    , nextPlayer
-    , noLosers
     ) where
 
 import Control.Monad.Reader (MonadReader (ask))
@@ -45,7 +32,6 @@ import Output (
     , victoryMessage
     )
 
-newtype NextPlayer   = NextPlayer Player
 newtype Uncertainty  = Uncertainty Float
 newtype RandomFactor = RandomFactor Float
 
@@ -88,10 +74,6 @@ playerNames = [
 
 playerFromName :: PlayerName -> Player
 playerFromName = Player $ UncertaintyFactor 0
-
-nextPlayer :: Player -> [Player] -> Player
-nextPlayer currentPlayer players =
-    head $ tail $ dropWhile (currentPlayer /=) $ cycle players
 
 noLosers :: Player -> Result -> [Player] -> [Player]
 noLosers currentPlayer Incorrect = filter $ (/=) currentPlayer
@@ -154,6 +136,12 @@ nextPlay randomFactor = do
                                                        playerAnswer
                                                        pResult
 
+nextPlayers :: [Player] -> Result -> [Player]
+nextPlayers players result = rotate $ playersAlive
+    where
+        playersAlive = noLosers (head players) result players
+        rotate = drop 1 <> take 1
+
 nextGameState :: (MonadState GameState m, MonadReader Uncertainty m)
               => Play -> m ()
 nextGameState (LastPlay _) = pure ()
@@ -162,7 +150,7 @@ nextGameState (RegularPlay result _) = do
     players <- gets remainingPlayers
     questions <- gets $ tail . remainingQuestions
     put GameState {
-          remainingPlayers = noLosers (head players) result players
+          remainingPlayers = nextPlayers players result
         , uncertaintyFactor = UncertaintyFactor $ uFactor + 1
         , remainingQuestions = questions
     }
