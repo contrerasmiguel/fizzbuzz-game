@@ -8,6 +8,7 @@ module Game (
         , remainingQuestions
         )
     , NextPlayer        (NextPlayer)
+    , Play              (LastPlay, RegularPlay)
     , Player            (Player)
     , PlayerName
     , Uncertainty       (Uncertainty)
@@ -15,15 +16,18 @@ module Game (
     , RandomFactor      (RandomFactor)
     , answer
     , availablePlayers
+    , gameFinished
     , initialState
     , maxPlayers
     , maxUncertainty
+    , nextGameState
+    , nextPlay
     , nextPlayer
     , noLosers
     ) where
 
 import Control.Monad.Reader (MonadReader (ask))
-import Control.Monad.State (MonadState, gets)
+import Control.Monad.State (MonadState, gets, put)
 
 import FizzBuzz (
       Answer (Words, Number)
@@ -31,9 +35,15 @@ import FizzBuzz (
     , Result (Incorrect)
     , Words (Fizz, Buzz, FizzBuzz)
     , correctAnswer
+    , result
     )
 
-type PlayerName = String
+import Output (
+      PlayInfo (PlayInfo)
+    , PlayerName
+    , showPlay
+    , victoryMessage
+    )
 
 newtype NextPlayer   = NextPlayer Player
 newtype Uncertainty  = Uncertainty Float
@@ -54,6 +64,13 @@ data GameState = GameState {
     , uncertaintyFactor  :: UncertaintyFactor
     , remainingQuestions :: [Question]
     }
+
+data Play = LastPlay String
+          | RegularPlay Result String
+
+instance Show Play where
+    show (RegularPlay _ message) = message
+    show (LastPlay message) = message
 
 playerNames :: [PlayerName]
 playerNames = [
@@ -121,3 +138,35 @@ maxUncertainty = Uncertainty 999
 
 questions :: [Question]
 questions = [1..]
+
+nextPlay :: (MonadState GameState m, MonadReader Uncertainty m)
+     => Float -> m Play
+nextPlay randomFactor = do
+    players <- gets remainingPlayers
+    question <- gets $ head . remainingQuestions
+    playerAnswer <- answer $ RandomFactor randomFactor
+    let Player _ pName = head players
+    let pResult = result playerAnswer question
+    pure $ if length players == 1
+        then LastPlay $ victoryMessage pName
+        else RegularPlay pResult $ showPlay $ PlayInfo question
+                                                       pName
+                                                       playerAnswer
+                                                       pResult
+
+nextGameState :: (MonadState GameState m, MonadReader Uncertainty m)
+              => Play -> m ()
+nextGameState (LastPlay _) = pure ()
+nextGameState (RegularPlay result _) = do
+    UncertaintyFactor uFactor <- gets uncertaintyFactor
+    players <- gets remainingPlayers
+    questions <- gets $ tail . remainingQuestions
+    put GameState {
+          remainingPlayers = noLosers (head players) result players
+        , uncertaintyFactor = UncertaintyFactor $ uFactor + 1
+        , remainingQuestions = questions
+    }
+
+gameFinished :: Play -> Bool
+gameFinished (LastPlay _) = True
+gameFinished (RegularPlay _ _) = False

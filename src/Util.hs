@@ -1,4 +1,4 @@
-module Util (asManyAs, reorderBy) where
+module Util (reorderByMany) where
 
 import Control.Monad (replicateM)
 import Data.Function (on)
@@ -14,3 +14,6 @@ reorderBy xs = fmap fst . sortBy (compare `on` snd) . zip xs
 -- m a (for replicateM)
 asManyAs :: (Foldable t, Applicative m) => t a -> m b -> m [b]
 asManyAs = replicateM . length
+
+reorderByMany :: (Ord b, Applicative f) => f b -> [a] -> f [a]
+reorderByMany randomGen xs = reorderBy xs <$> asManyAs xs randomGen

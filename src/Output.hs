@@ -1,5 +1,6 @@
 module Output (
       PlayInfo (PlayInfo)
+    , PlayerName
     , showPlay
     , victoryMessage
     ) where
@@ -7,11 +8,11 @@ module Output (
 import Control.Arrow ((>>>))
 import FizzBuzz (Result, Question, Answer)
 
-import Game (PlayerName)
+type PlayerName = String
 
 data PlayInfo = PlayInfo {
       question   :: Question
-    , playerName :: String
+    , playerName :: PlayerName
     , answer     :: Answer
     , result     :: Result
     }
